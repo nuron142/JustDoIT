@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">JustDoIT</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="PARSE_APPLICATION_ID">TsF3Y9T3hvqYMD6GRmno0KINoHNHcCOuOFeco5gd</string>
+    <string name="PARSE_CLIENT_ID">4gSP6WeI9NaYdmUCPpedeL3BFH56LHMrxHIQeGbS</string>
+    <string name="fb_app_id">457154454495131</string>
+</resources>
