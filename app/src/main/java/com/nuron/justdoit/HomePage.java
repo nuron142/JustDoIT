@@ -20,8 +20,13 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.parse.FindCallback;
+import com.parse.LogInCallback;
+import com.parse.ParseACL;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
 import com.rengwuxian.materialedittext.MaterialEditText;
@@ -29,6 +34,7 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import org.json.JSONException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import butterknife.Bind;
@@ -59,6 +65,34 @@ public class HomePage extends AppCompatActivity
     @OnClick(R.id.parse_login)
     public void loginWithParseClick() {
 
+        if (loginPass.getText() == null || loginPass.getText().toString().isEmpty()) {
+            Toast.makeText(HomePage.this, "Password can't be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (loginEmail.getText() == null || loginEmail.getText().toString().isEmpty()) {
+            Toast.makeText(HomePage.this, "Password can't be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Initiating login process");
+        ParseUser.logInInBackground(loginEmail.getText().toString(),
+                loginPass.getText().toString(), new LogInCallback() {
+                    public void done(ParseUser user, ParseException e) {
+                        if (user != null) {
+                            Log.d(TAG, "Login successful");
+                            Toast.makeText(HomePage.this, "Welcome back " +
+                                    ParseUser.getCurrentUser().getUsername(),
+                                    Toast.LENGTH_SHORT).show();
+                            //saveNewData();
+                            retrieveData();
+                        } else {
+                            Log.d(TAG, "Login failed : " + e);
+                            Toast.makeText(HomePage.this, e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
     @OnClick(R.id.parse_signup)
@@ -86,6 +120,7 @@ public class HomePage extends AppCompatActivity
                 if (e == null) {
                     Log.d(TAG, "Sign Up successful");
                     Toast.makeText(HomePage.this, "Sign Up successful", Toast.LENGTH_SHORT).show();
+                    saveNewData();
                 } else {
 
                     Log.d(TAG, "Exception during SignUp : " + e);
@@ -154,6 +189,7 @@ public class HomePage extends AppCompatActivity
                                 } else {
                                     Log.d(TAG, "User logged in through Facebook!");
                                     getUserDetailsFromFB();
+                                    saveNewDataFB();
                                     getUserDetailsFromParse();
                                 }
                             }
@@ -214,6 +250,42 @@ public class HomePage extends AppCompatActivity
             parseUser.setUsername(fbName);
             parseUser.saveInBackground();
         }
+    }
+
+    private void saveNewData(){
+
+        ParseObject privateNote = new ParseObject("Note");
+        privateNote.put("todo", "Complete the App");
+        privateNote.put("time", "10:30PM, 29th Nov");
+        privateNote.put("location", "Home");
+        privateNote.setACL(new ParseACL(ParseUser.getCurrentUser()));
+        privateNote.saveInBackground();
+
+    }
+
+    private void saveNewDataFB(){
+
+        ParseObject privateNote = new ParseObject("Note");
+        privateNote.put("todo", "FB Complete the App");
+        privateNote.put("time", "10:30PM, 29th Nov");
+        privateNote.put("location", "Home");
+        privateNote.setACL(new ParseACL(ParseUser.getCurrentUser()));
+        privateNote.saveInBackground();
+
+    }
+
+    private void retrieveData(){
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Note");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> scoreList, ParseException e) {
+                if (e == null) {
+                    Log.d("score", "Retrieved " + scoreList.size() + " scores");
+                } else {
+                    Log.d("score", "Error: " + e.getMessage());
+                }
+            }
+        });
     }
 
 

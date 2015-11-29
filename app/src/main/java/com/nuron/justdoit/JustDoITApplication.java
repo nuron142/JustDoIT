@@ -13,6 +13,7 @@ public class JustDoITApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Parse.enableLocalDatastore(this);
         Parse.initialize(this, getResources().getString(R.string.PARSE_APPLICATION_ID),
                 getResources().getString(R.string.PARSE_CLIENT_ID));
         ParseFacebookUtils.initialize(this);
