@@ -1,6 +1,11 @@
 package com.nuron.justdoit;
 
+import android.content.Context;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -20,6 +25,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.google.android.gms.location.LocationRequest;
 import com.parse.FindCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseACL;
@@ -33,26 +39,37 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.json.JSONException;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.parse.ParseFacebookObservable;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class HomePage extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private final int LOCATION_TIMEOUT_IN_SECONDS = 10;
     ParseUser parseUser;
     String fbName = null, fbMail = null;
-    Subscription parseLoginFacebookSubscription, fullFbDetailsSubscription;
+    Subscription locationSub, addressSub,
+            parseLoginFacebookSubscription, fullFbDetailsSubscription;
+
+    CompositeSubscription allSubscriptions;
 
     private final static String TAG = HomePage.class.getSimpleName();
 
@@ -82,7 +99,7 @@ public class HomePage extends AppCompatActivity
                         if (user != null) {
                             Log.d(TAG, "Login successful");
                             Toast.makeText(HomePage.this, "Welcome back " +
-                                    ParseUser.getCurrentUser().getUsername(),
+                                            ParseUser.getCurrentUser().getUsername(),
                                     Toast.LENGTH_SHORT).show();
                             //saveNewData();
                             retrieveData();
@@ -93,6 +110,8 @@ public class HomePage extends AppCompatActivity
                         }
                     }
                 });
+
+        getRxLocation();
     }
 
     @OnClick(R.id.parse_signup)
@@ -189,7 +208,7 @@ public class HomePage extends AppCompatActivity
                                 } else {
                                     Log.d(TAG, "User logged in through Facebook!");
                                     getUserDetailsFromFB();
-                                    saveNewDataFB();
+                                    saveNewData();
                                     getUserDetailsFromParse();
                                 }
                             }
@@ -252,7 +271,7 @@ public class HomePage extends AppCompatActivity
         }
     }
 
-    private void saveNewData(){
+    private void saveNewData() {
 
         ParseObject privateNote = new ParseObject("Note");
         privateNote.put("todo", "Complete the App");
@@ -263,18 +282,7 @@ public class HomePage extends AppCompatActivity
 
     }
 
-    private void saveNewDataFB(){
-
-        ParseObject privateNote = new ParseObject("Note");
-        privateNote.put("todo", "FB Complete the App");
-        privateNote.put("time", "10:30PM, 29th Nov");
-        privateNote.put("location", "Home");
-        privateNote.setACL(new ParseACL(ParseUser.getCurrentUser()));
-        privateNote.saveInBackground();
-
-    }
-
-    private void retrieveData(){
+    private void retrieveData() {
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Note");
         query.findInBackground(new FindCallback<ParseObject>() {
@@ -289,6 +297,97 @@ public class HomePage extends AppCompatActivity
     }
 
 
+    //region Rx Calls for Location
+    public boolean isNetConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
+    private void getRxLocation() {
+        Log.d(TAG, "Getting Location");
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
+
+        LocationRequest req = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setExpirationDuration(TimeUnit.SECONDS.toMillis(LOCATION_TIMEOUT_IN_SECONDS))
+                .setInterval(5);
+
+
+        locationSub = locationProvider.getUpdatedLocation(req)
+                .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
+                .first()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Location>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                        Toast.makeText(HomePage.this, "Couldn't get location",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onNext(Location location) {
+
+                        DecimalFormat formatter = new DecimalFormat("##.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+                        formatter.setRoundingMode(RoundingMode.HALF_UP);
+
+                        Log.d(TAG, "Lat = " +
+                                formatter.format(location.getLatitude()) + " Long = "
+                                + formatter.format(location.getLongitude()));
+
+                        if (isNetConnected())
+                            getRxAddress(location);
+                        else {
+                            Toast.makeText(HomePage.this, "Couldn't lookup address",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    private void getRxAddress(Location location) {
+
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
+        Observable<List<Address>> reverseGeocodeObservable = locationProvider
+                .getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
+
+        addressSub = reverseGeocodeObservable
+                .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<Address>>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(HomePage.this, "Couldn't lookup address",
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(List<Address> addresses) {
+
+                        Address addressItem = addresses.get(0);
+
+                        String address = addressItem.getAddressLine(0) + ", " + addressItem.getAddressLine(1);
+
+                        Log.d(TAG, "Address : " + address);
+
+                    }
+                });
+    }
+    //endregion
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -298,6 +397,12 @@ public class HomePage extends AppCompatActivity
 
         if (fullFbDetailsSubscription != null && !fullFbDetailsSubscription.isUnsubscribed())
             fullFbDetailsSubscription.unsubscribe();
+
+        if (locationSub != null && !locationSub.isUnsubscribed())
+            locationSub.unsubscribe();
+
+        if (addressSub != null && !addressSub.isUnsubscribed())
+            addressSub.unsubscribe();
     }
 
     //region Activity Related
