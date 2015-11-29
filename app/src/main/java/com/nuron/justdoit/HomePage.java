@@ -10,24 +10,101 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
-import com.parse.Parse;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
+import com.rengwuxian.materialedittext.MaterialEditText;
+
+import org.json.JSONException;
+
+import java.util.Arrays;
+import java.util.concurrent.Callable;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.parse.ParseFacebookObservable;
+import rx.schedulers.Schedulers;
 
 public class HomePage extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    ParseUser parseUser;
+    String fbName = null, fbMail = null;
+    Subscription parseLoginFacebookSubscription, fullFbDetailsSubscription;
+
+    private final static String TAG = HomePage.class.getSimpleName();
+
+    @Bind(R.id.login_email_text)
+    MaterialEditText loginEmail;
+
+    @Bind(R.id.login_pass_text)
+    MaterialEditText loginPass;
+
+    @OnClick(R.id.parse_login)
+    public void loginWithParseClick() {
+
+    }
+
+    @OnClick(R.id.parse_signup)
+    public void signUpWithParseClick() {
+
+        if (loginPass.getText() == null || loginPass.getText().toString().isEmpty()) {
+            Toast.makeText(HomePage.this, "Password can't be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (loginEmail.getText() == null || loginEmail.getText().toString().isEmpty()) {
+            Toast.makeText(HomePage.this, "Password can't be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Initiating sign up process");
+
+        ParseUser user = new ParseUser();
+        user.setUsername(loginEmail.getText().toString());
+        user.setPassword(loginPass.getText().toString());
+        user.setEmail(loginEmail.getText().toString());
+
+        user.signUpInBackground(new SignUpCallback() {
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "Sign Up successful");
+                    Toast.makeText(HomePage.this, "Sign Up successful", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    Log.d(TAG, "Exception during SignUp : " + e);
+                    Toast.makeText(HomePage.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
+        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        setUpParse();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -39,8 +116,9 @@ public class HomePage extends AppCompatActivity
         });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle =
+                new ActionBarDrawerToggle(this, drawer, toolbar,
+                        R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -48,14 +126,109 @@ public class HomePage extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void setUpParse() {
-        Parse.initialize(this, getResources().getString(R.string.PARSE_APPLICATION_ID),
-                getResources().getString(R.string.PARSE_CLIENT_ID));
-        ParseFacebookUtils.initialize(this);
+    @OnClick(R.id.facebook_login)
+    public void loginWithFacebookClick() {
 
+        parseLoginFacebookSubscription =
+                ParseFacebookObservable.logInWithReadPermissions(HomePage.this,
+                        Arrays.asList("public_profile", "email"))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<ParseUser>() {
+                            @Override
+                            public void onCompleted() {
+                            }
 
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.d(TAG, "Something went wrong while logging in through Facebook!");
+                            }
+
+                            @Override
+                            public void onNext(ParseUser parseUser) {
+
+                                if (parseUser == null) {
+                                    Log.d(TAG, "Uh oh. The user cancelled the Facebook login.");
+                                } else if (parseUser.isNew()) {
+                                    Log.d(TAG, "User signed up and logged in through Facebook!");
+                                    getUserDetailsFromFB();
+                                } else {
+                                    Log.d(TAG, "User logged in through Facebook!");
+                                    getUserDetailsFromFB();
+                                    getUserDetailsFromParse();
+                                }
+                            }
+                        });
     }
 
+    private void getUserDetailsFromFB() {
+
+        Observable<GraphResponse> fullDetailsObservable =
+                Observable.fromCallable(new Callable<GraphResponse>() {
+                    @Override
+                    public GraphResponse call() throws Exception {
+                        return new GraphRequest(AccessToken.getCurrentAccessToken(), "/me", null,
+                                HttpMethod.GET).executeAndWait();
+                    }
+                });
+
+        fullFbDetailsSubscription = fullDetailsObservable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<GraphResponse>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onNext(GraphResponse graphResponse) {
+
+                        Log.d(TAG, "graphResponse : " + graphResponse.getRawResponse());
+
+                        try {
+                            fbName = graphResponse.getJSONObject().getString("name");
+                            fbMail = graphResponse.getJSONObject().getString("email");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        saveNewUser();
+
+                    }
+                });
+    }
+
+    private void getUserDetailsFromParse() {
+        parseUser = ParseUser.getCurrentUser();
+        Toast.makeText(HomePage.this, "Welcome back " + parseUser.getUsername(),
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveNewUser() {
+        ParseUser parseUser = ParseUser.getCurrentUser();
+        if (!fbName.equals(parseUser.getUsername())) {
+
+            parseUser.setUsername(fbName);
+            parseUser.saveInBackground();
+        }
+    }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (parseLoginFacebookSubscription != null &&
+                !parseLoginFacebookSubscription.isUnsubscribed())
+            parseLoginFacebookSubscription.unsubscribe();
+
+        if (fullFbDetailsSubscription != null && !fullFbDetailsSubscription.isUnsubscribed())
+            fullFbDetailsSubscription.unsubscribe();
+    }
+
+    //region Activity Related
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -118,4 +291,6 @@ public class HomePage extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+    //endregion
+
 }
