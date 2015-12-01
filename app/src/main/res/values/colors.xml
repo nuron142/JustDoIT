@@ -3,4 +3,23 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="fifty_percent_white">#80FFFFFF</color>
+    <color name="green">#00FF00</color>
+    <color name="half_opacity_white">#80FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="quarter_opacity_black">#40000000</color>
+    <color name="eighty_five_percent_black">#D9000000</color>
+    <color name="eighty_percent_black">#CC000000</color>
+    <color name="opacity_seventy_percent_black">#66000000</color>
+    <color name="opacity_forty_percent_black">#B3000000</color>
+    <color name="fifty_percent_black">#8C000000</color>
+    <color name="transparent">#00000000</color>
+
+    <color name="forty_percent_black">#66000000</color>
+    <color name="ten_percent_black">#1A000000</color>
+    <color name="fifteen_percent_black">#26000000</color>
+    <color name="twenty_percent_black">#33000000</color>
+    <color name="seventy_percent_black">#B3000000</color>
 </resources>

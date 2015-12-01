@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="0dp"
+        app:cardBackgroundColor="@android:color/white"
+        card_view:cardCornerRadius="0dp"
+        card_view:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/home_back_button"
+                    android:layout_width="42dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:alpha="0.7"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_search_black" />
+
+                <EditText
+                    android:id="@+id/search_items_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:hint="Search Location"
+                    android:imeOptions="actionDone"
+                    android:inputType="textNoSuggestions"
+                    android:padding="0dp"
+                    android:scrollHorizontally="true"
+                    android:textColorHint="@color/forty_percent_black"
+                    android:textSize="16sp"
+                    android:theme="@style/SearchEditTextTheme" />
+
+                <ImageView
+                    android:id="@+id/search_clear_button"
+                    android:layout_width="42dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:alpha="0.5"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_clear_black_24dp"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <View
+                android:id="@+id/search_divider"
+                android:layout_width="match_parent"
+                android:layout_height="0.3dp"
+                android:background="@color/twenty_percent_black"
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/search_result_text"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
+                android:gravity="center_vertical"
+                android:padding="0dp"
+                android:text="10 results found for 'San'"
+                android:textColor="@color/seventy_percent_black"
+                android:textSize="14sp"
+                android:theme="@style/SearchEditTextTheme"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_search_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/card_search_view"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="0dp"
+        app:cardBackgroundColor="@android:color/white"
+        card_view:cardCornerRadius="0dp"
+        card_view:cardElevation="0dp">
+
+        <ListView
+            android:id="@+id/activity_search_recent_query_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@null"
+            android:dividerHeight="0dp"/>
+
+    </android.support.v7.widget.CardView>
+
+</RelativeLayout>

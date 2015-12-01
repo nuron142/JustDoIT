@@ -17,4 +17,43 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="SearchEditTextTheme">
+        <item name="colorControlNormal">@color/transparent</item>
+        <item name="colorControlActivated">@color/transparent</item>
+        <item name="colorControlHighlight">@color/transparent</item>
+    </style>
+
+    <style name="OrderCommentEditTextTheme">
+        <!-- Used for the bottom line when not selected / focused -->
+        <item name="colorControlNormal">@color/ten_percent_black</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+        <!-- colorControlActivated & colorControlHighlight use the colorAccent color by default -->
+    </style>
+
+    <style name="SearchEditTextThemeNoLine">
+        <!-- Used for the bottom line when not selected / focused -->
+        <item name="colorControlNormal">@color/transparent</item>
+        <item name="colorControlActivated">@color/transparent</item>
+        <item name="colorControlHighlight">@color/transparent</item>
+        <!-- colorControlActivated & colorControlHighlight use the colorAccent color by default -->
+    </style>
+
+    <style name="TextAppearenceFloat" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorHint">@color/fifty_percent_white</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/white</item>
+        <item name="colorControlHighlight">@color/transparent</item>
+    </style>
+
+    <style name="SearchEditTextThemeNoLineNew">
+        <!-- Used for the bottom line when not selected / focused -->
+        <item name="colorControlNormal">@color/fifty_percent_white</item>
+        <item name="colorControlActivated">@color/fifty_percent_white</item>
+        <item name="colorControlHighlight">@color/fifty_percent_white</item>
+        <item name="android:textColorHint">@color/fifty_percent_white</item>
+        <item name="android:textColor">@color/white</item>
+        <!-- colorControlActivated & colorControlHighlight use the colorAccent color by default -->
+    </style>
+
 </resources>

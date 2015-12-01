@@ -8,4 +8,6 @@
     <string name="PARSE_APPLICATION_ID">TsF3Y9T3hvqYMD6GRmno0KINoHNHcCOuOFeco5gd</string>
     <string name="PARSE_CLIENT_ID">4gSP6WeI9NaYdmUCPpedeL3BFH56LHMrxHIQeGbS</string>
     <string name="fb_app_id">457154454495131</string>
+    <string name="google_places_api">AIzaSyBCWOwFgzl-JqFXOxylrWSCbCcecVcnDd0</string>
+    <string name="title_activity_add_to_do_item_page">AddToDoItemPage</string>
 </resources>

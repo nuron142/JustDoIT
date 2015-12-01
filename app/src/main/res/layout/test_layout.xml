@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="14">
+
+    <LinearLayout
+        android:id="@+id/card_search_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true"
+        android:background="@color/colorPrimary"
+        android:padding="0dp"
+        android:elevation="4dp">
+
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/todo_item_name_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginBottom="12dp"
+            android:textSize="18sp"
+            android:hint="To Do"
+            android:imeOptions="actionDone"
+            android:textColorHint="@android:color/white"
+            app:met_baseColor="@android:color/white"
+            app:met_floatingLabel="highlight"
+            app:met_primaryColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="6"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        android:padding="0dp">
+
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/todo_date_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginBottom="12dp"
+            android:textSize="18sp"
+            android:hint="Date"
+            android:imeOptions="actionDone" />
+
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/todo_location_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginBottom="12dp"
+            android:drawableRight="@drawable/ic_search_black"
+            android:textSize="18sp"
+            android:hint="Location"
+            android:imeOptions="actionDone" />
+
+    </LinearLayout>
+</LinearLayout>
