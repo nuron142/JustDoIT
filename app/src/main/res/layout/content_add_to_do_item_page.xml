@@ -27,7 +27,7 @@
             app:layout_heightPercent="80%">
 
             <com.rengwuxian.materialedittext.MaterialEditText
-                android:id="@+id/todo_item_name_text"
+                android:id="@+id/todo_item_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="24dp"
@@ -55,25 +55,30 @@
         app:layout_heightPercent="70%">
 
         <com.rengwuxian.materialedittext.MaterialEditText
-            android:id="@+id/todo_item_name_text_1"
+            android:id="@+id/todo_item_name_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="24dp"
             android:layout_marginRight="24dp"
             android:hint="Due Date"
+            android:focusable="false"
+            android:inputType="none"
             android:imeOptions="actionDone"
             android:textSize="18sp"
             app:met_floatingLabel="highlight" />
 
         <com.rengwuxian.materialedittext.MaterialEditText
-            android:id="@+id/todo_item_name_text_2"
+            android:id="@+id/todo_item_name_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="24dp"
             android:layout_marginRight="24dp"
             android:layout_marginTop="8dp"
+            android:focusable="false"
+            android:inputType="none"
+            android:drawableStart="@drawable/ic_search_black"
+            android:drawablePadding="12dp"
             android:hint="Location"
-            android:imeOptions="actionDone"
             android:textSize="18sp"
             app:met_floatingLabel="highlight" />
 
