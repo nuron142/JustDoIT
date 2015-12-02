@@ -1,35 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.nuron.justdoit.AddToDoItemPage">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".AddToDoItemPage">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/appbarlayout"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+    <android.support.percent.PercentRelativeLayout
+        android:id="@+id/add_tem_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:animateLayoutChanges="true">
+
+        <android.support.percent.PercentRelativeLayout
+            android:id="@+id/item_name_layout"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_height="0dp"
+            android:background="@color/colorPrimary"
+            android:descendantFocusability="beforeDescendants"
+            android:elevation="4dp"
+            android:focusableInTouchMode="true"
+            android:padding="0dp"
+            app:layout_heightPercent="25%">
 
-    </android.support.design.widget.AppBarLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:gravity="bottom"
+                app:layout_heightPercent="80%">
 
-    <include layout="@layout/content_add_to_do_item_page" />
+                <com.rengwuxian.materialedittext.MaterialEditText
+                    android:id="@+id/todo_item_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp"
+                    android:hint="To Do"
+                    android:imeOptions="actionDone"
+                    android:textColorHint="@android:color/white"
+                    android:textSize="18sp"
+                    app:met_baseColor="@android:color/white"
+                    app:met_floatingLabel="highlight"
+                    app:met_primaryColor="@android:color/white" />
+            </LinearLayout>
+
+        </android.support.percent.PercentRelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_below="@+id/item_name_layout"
+            android:layout_marginTop="16dp"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical"
+            android:padding="0dp"
+            app:layout_heightPercent="70%">
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/todo_item_name_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
+                android:focusable="false"
+                android:hint="Due Date"
+                android:textSize="18sp"
+                app:met_floatingLabel="highlight" />
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/todo_item_name_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
+                android:layout_marginTop="8dp"
+                android:drawablePadding="12dp"
+                android:drawableStart="@drawable/ic_search_black"
+                android:focusable="false"
+                android:hint="Location"
+                android:textSize="18sp"
+                app:met_floatingLabel="highlight" />
+
+        </LinearLayout>
+
+    </android.support.percent.PercentRelativeLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_done_white_18dp" />
 
-</android.support.design.widget.CoordinatorLayout>
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar" />
+
+</RelativeLayout>

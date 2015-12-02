@@ -10,6 +10,12 @@ import android.support.v4.app.DialogFragment;
  * Created by nuron on 01/12/15.
  */
 public class DatePickerFragment extends DialogFragment {
+
+
+    public static final String DATE_YEAR_ARG = "year";
+    public static final String DATE_MONTH_ARG = "month";
+    public static final String DATE_DAY_ARG = "day";
+
     DatePickerDialog.OnDateSetListener ondateSet;
     private int year, month, day;
 
@@ -23,9 +29,9 @@ public class DatePickerFragment extends DialogFragment {
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        year = args.getInt("year");
-        month = args.getInt("month");
-        day = args.getInt("day");
+        year = args.getInt(DATE_YEAR_ARG);
+        month = args.getInt(DATE_MONTH_ARG);
+        day = args.getInt(DATE_DAY_ARG);
     }
 
     @NonNull

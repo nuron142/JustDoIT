@@ -47,4 +47,5 @@ dependencies {
     compile 'com.infstory:rxparse:2.0.1'
     compile 'com.infstory:rxparse-facebook-v4:2.0.1'
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
+    compile 'com.android.support:support-v4:23.1.1'
 }

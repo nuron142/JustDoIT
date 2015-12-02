@@ -11,6 +11,10 @@ import android.text.format.DateFormat;
  * Created by nuron on 02/12/15.
  */
 public class TimePickerFragment extends DialogFragment {
+
+    public static final String TIME_HOUR_ARG = "hour";
+    public static final String TIME_MINUTE_ARG = "minute";
+
     TimePickerDialog.OnTimeSetListener onTimeSetListener;
     private int hour, minute;
 
@@ -22,8 +26,8 @@ public class TimePickerFragment extends DialogFragment {
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        hour = args.getInt("hour");
-        minute = args.getInt("minute");
+        hour = args.getInt(TIME_HOUR_ARG);
+        minute = args.getInt(TIME_MINUTE_ARG);
     }
 
     @NonNull
