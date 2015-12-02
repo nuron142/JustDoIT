@@ -56,7 +56,6 @@ public class PlacesActivity extends AppCompatActivity {
 //            @Override
 //            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                AutocompleteInfo info = (AutocompleteInfo) parent.getAdapter().getItem(position);
-//                startActivity(PlacesResultActivity.getStartIntent(PlacesActivity.this, info.id));
 //            }
 //        });
 
