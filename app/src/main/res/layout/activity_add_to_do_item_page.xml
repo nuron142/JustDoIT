@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".AddToDoItemPage">
+    tools:context=".AddToDoItemActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -85,11 +85,24 @@
                 android:layout_marginRight="24dp"
                 android:layout_marginTop="8dp"
                 android:drawablePadding="12dp"
-                android:drawableStart="@drawable/ic_search_black"
-                android:focusable="false"
                 android:hint="Location"
+                android:textCursorDrawable="@null"
                 android:textSize="18sp"
                 app:met_floatingLabel="highlight" />
+
+            <TextView
+                android:id="@+id/todo_search_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
+                android:layout_marginTop="8dp"
+                android:drawablePadding="12dp"
+                android:text="Change Location"
+                android:textColor="@color/colorPrimary"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:textSize="16sp"/>
 
         </LinearLayout>
 

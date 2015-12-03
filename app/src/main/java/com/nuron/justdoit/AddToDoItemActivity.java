@@ -42,7 +42,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
-public class AddToDoItemPage extends AppCompatActivity {
+public class AddToDoItemActivity extends AppCompatActivity {
 
 
     @Bind(R.id.todo_item_name)
@@ -50,6 +50,9 @@ public class AddToDoItemPage extends AppCompatActivity {
 
     @Bind(R.id.todo_item_name_location)
     MaterialEditText todoItemLocationText;
+
+    @Bind(R.id.todo_item_name_date)
+    MaterialEditText todoDateText;
 
     @Bind(R.id.item_name_layout)
     PercentRelativeLayout toDoLayout;
@@ -71,7 +74,9 @@ public class AddToDoItemPage extends AppCompatActivity {
     CompositeSubscription allSubscriptions;
     private final int LOCATION_TIMEOUT_IN_SECONDS = 10;
 
-    private final static String TAG = AddToDoItemPage.class.getSimpleName();
+    private final static String TAG = AddToDoItemActivity.class.getSimpleName();
+
+    String dateString, timeString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +105,7 @@ public class AddToDoItemPage extends AppCompatActivity {
         final DatePickerFragment datePickerFragment = new DatePickerFragment();
 
         Calendar calender = Calendar.getInstance();
-        Bundle dateArgs = new Bundle();
+        final Bundle dateArgs = new Bundle();
         dateArgs.putInt(DatePickerFragment.DATE_YEAR_ARG, calender.get(Calendar.YEAR));
         dateArgs.putInt(DatePickerFragment.DATE_MONTH_ARG, calender.get(Calendar.MONTH));
         dateArgs.putInt(DatePickerFragment.DATE_DAY_ARG, calender.get(Calendar.DAY_OF_MONTH));
@@ -117,6 +122,15 @@ public class AddToDoItemPage extends AppCompatActivity {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
+                if (hourOfDay < 12) {
+                    timeString = "0" + Integer.toString(hourOfDay) + ":" + minute + " AM";
+                } else if (hourOfDay == 12) {
+                    timeString = Integer.toString(hourOfDay) + ":" + minute + " PM";
+                } else {
+                    timeString = Integer.toString(hourOfDay - 12) + ":" + minute + " PM";
+                }
+
+                todoDateText.setText(timeString + " , " + dateString);
             }
         });
 
@@ -135,11 +149,7 @@ public class AddToDoItemPage extends AppCompatActivity {
                 else
                     day = Integer.toString(dayOfMonth);
 
-//                String selectedDate = utilities.
-//                        getDateFormat(String.valueOf(year) + "-" + month + "-" + day,
-//                                Utilities.FROM_DATE_PICKER_TO_EDIT_TEXT);
-//                EditText date = (EditText) rootView.findViewById(R.id.add_date);
-//                date.setText(selectedDate);
+                dateString = day + "-" + month + "-" + Integer.toString(year);
 
                 timePickerFragment.show(getSupportFragmentManager(), "Time Picker");
             }
@@ -148,7 +158,7 @@ public class AddToDoItemPage extends AppCompatActivity {
         datePickerFragment.show(getSupportFragmentManager(), "Date Picker");
     }
 
-    @OnClick(R.id.todo_item_name_location)
+    @OnClick(R.id.todo_search_location)
     public void searchLocation() {
 
 
@@ -172,8 +182,15 @@ public class AddToDoItemPage extends AppCompatActivity {
     }
 
 
-    public void setLocation(String location) {
+    @OnClick(R.id.fab)
+    public void saveItemToDo() {
 
+    }
+
+    public void setLocation(String location) {
+        currentLocation = location;
+        todoItemLocationText.setText(location);
+        onBackPressed();
     }
 
     @Override
@@ -249,7 +266,7 @@ public class AddToDoItemPage extends AppCompatActivity {
                     @Override
                     public void onError(Throwable e) {
 
-                        Toast.makeText(AddToDoItemPage.this, "Couldn't get location",
+                        Toast.makeText(AddToDoItemActivity.this, "Couldn't get location",
                                 Toast.LENGTH_SHORT).show();
                     }
 
@@ -266,7 +283,7 @@ public class AddToDoItemPage extends AppCompatActivity {
                         if (isNetConnected())
                             getRxAddress(location);
                         else {
-                            Toast.makeText(AddToDoItemPage.this, "Couldn't lookup address",
+                            Toast.makeText(AddToDoItemActivity.this, "Couldn't lookup address",
                                     Toast.LENGTH_LONG).show();
                         }
                     }
@@ -290,7 +307,7 @@ public class AddToDoItemPage extends AppCompatActivity {
 
                     @Override
                     public void onError(Throwable e) {
-                        Toast.makeText(AddToDoItemPage.this, "Couldn't lookup address",
+                        Toast.makeText(AddToDoItemActivity.this, "Couldn't lookup address",
                                 Toast.LENGTH_LONG).show();
                     }
 

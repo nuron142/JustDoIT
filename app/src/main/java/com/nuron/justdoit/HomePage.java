@@ -156,7 +156,7 @@ public class HomePage extends AppCompatActivity
 
     @OnClick(R.id.add_new_item)
     public void launchAddItemActivity() {
-        Intent intent = new Intent(this, AddToDoItemPage.class);
+        Intent intent = new Intent(this, AddToDoItemActivity.class);
         startActivity(intent);
     }
 

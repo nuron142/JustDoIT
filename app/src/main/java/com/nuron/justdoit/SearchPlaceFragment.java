@@ -4,7 +4,9 @@ package com.nuron.justdoit;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,15 +21,14 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.jakewharton.rxbinding.widget.RxTextView;
 import com.jakewharton.rxbinding.widget.TextViewTextChangeEvent;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
-import rx.functions.Action1;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.subscriptions.CompositeSubscription;
@@ -43,6 +44,15 @@ public class SearchPlaceFragment extends Fragment {
     @Bind(R.id.current_location_text)
     TextView currentLocationText;
 
+    @Bind(R.id.activity_search_recent_query_list)
+    RecyclerView searchRecyclerview;
+
+    @Bind(R.id.card_current_location)
+    CardView cardCurrentLocation;
+
+    @Bind(R.id.card_search_list)
+    CardView cardSearchList;
+
     private String currentLocation;
     public static final String CURRENT_LOCATION_ARG = "current_location";
     public static final String TAG = SearchPlaceFragment.class.getSimpleName();
@@ -50,6 +60,7 @@ public class SearchPlaceFragment extends Fragment {
 
     private ReactiveLocationProvider reactiveLocationProvider;
     private CompositeSubscription compositeSubscription;
+    private SearchLocationAdapter searchLocationAdapter;
 
     public SearchPlaceFragment() {
     }
@@ -77,12 +88,20 @@ public class SearchPlaceFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_search_place, container, false);
         ButterKnife.bind(this, rootView);
 
+        cardCurrentLocation.setVisibility(View.VISIBLE);
+        cardSearchList.setVisibility(View.GONE);
 
-        if(currentLocation != null && !currentLocation.isEmpty()) {
+        if (currentLocation != null && !currentLocation.isEmpty()) {
             currentLocationText.setText(currentLocation);
         } else {
             currentLocationText.setText("Couldn't Locate you. Tap to try again");
         }
+
+        searchRecyclerview.setHasFixedSize(true);
+        searchRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        searchLocationAdapter = new SearchLocationAdapter(getActivity());
+        searchRecyclerview.setAdapter(searchLocationAdapter);
 
         return rootView;
     }
@@ -94,14 +113,7 @@ public class SearchPlaceFragment extends Fragment {
 
         Observable<TextViewTextChangeEvent> searchTextSubscription =
                 RxTextView.textChangeEvents(searchLocationText)
-                        .debounce(100, TimeUnit.MILLISECONDS)
-                        .filter(new Func1<TextViewTextChangeEvent, Boolean>() {
-                            @Override
-                            public Boolean call(TextViewTextChangeEvent textViewTextChangeEvent) {
-                                return !TextUtils.isEmpty(
-                                        textViewTextChangeEvent.text().toString());
-                            }
-                        });
+                        .debounce(100, TimeUnit.MILLISECONDS);
 
         Observable<Location> lastKnownLocationObservable =
                 reactiveLocationProvider.getLastKnownLocation();
@@ -123,7 +135,7 @@ public class SearchPlaceFragment extends Fragment {
                     @Override
                     public Observable<AutocompletePredictionBuffer> call(
                             QueryWithCurrentLocation q) {
-                        if (q.location == null) return Observable.empty();
+                        if (q == null || q.location == null) return Observable.empty();
 
                         double latitude = q.location.getLatitude();
                         double longitude = q.location.getLongitude();
@@ -137,18 +149,40 @@ public class SearchPlaceFragment extends Fragment {
                 });
 
         compositeSubscription.
-                add(suggestionsObservable.subscribe(new Action1<AutocompletePredictionBuffer>() {
-                    @Override
-                    public void call(AutocompletePredictionBuffer buffer) {
-                        List<AutocompleteInfo> infos = new ArrayList<>();
-                        Log.d(TAG, "infos size : " + buffer.getCount());
-                        for (AutocompletePrediction prediction : buffer) {
-                            infos.add(new AutocompleteInfo(prediction.getDescription(),
-                                    prediction.getPlaceId()));
-                        }
-                        buffer.release();
-                    }
-                }));
+                add(suggestionsObservable
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<AutocompletePredictionBuffer>() {
+                            @Override
+                            public void onCompleted() {
+
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onNext(AutocompletePredictionBuffer buffer) {
+
+                                if (buffer.getCount() == 0) {
+                                    cardCurrentLocation.setVisibility(View.VISIBLE);
+                                    cardSearchList.setVisibility(View.GONE);
+                                } else {
+                                    cardCurrentLocation.setVisibility(View.GONE);
+                                    cardSearchList.setVisibility(View.VISIBLE);
+                                }
+
+                                searchLocationAdapter.clear();
+                                for (AutocompletePrediction prediction : buffer) {
+                                    searchLocationAdapter.addData(prediction.getDescription());
+                                }
+                                searchLocationAdapter.notifyDataSetChanged();
+                                buffer.release();
+                            }
+
+                        })
+                );
     }
 
 
@@ -168,21 +202,6 @@ public class SearchPlaceFragment extends Fragment {
         private QueryWithCurrentLocation(String query, Location location) {
             this.query = query;
             this.location = location;
-        }
-    }
-
-    private static class AutocompleteInfo {
-        private final String description;
-        private final String id;
-
-        private AutocompleteInfo(String description, String id) {
-            this.description = description;
-            this.id = id;
-        }
-
-        @Override
-        public String toString() {
-            return description;
         }
     }
 }
