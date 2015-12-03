@@ -2,30 +2,54 @@ package com.nuron.justdoit;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.location.Address;
+import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.percent.PercentRelativeLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
+import com.google.android.gms.location.LocationRequest;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class AddToDoItemPage extends AppCompatActivity {
 
 
     @Bind(R.id.todo_item_name)
     MaterialEditText todoItemNameText;
+
+    @Bind(R.id.todo_item_name_location)
+    MaterialEditText todoItemLocationText;
 
     @Bind(R.id.item_name_layout)
     PercentRelativeLayout toDoLayout;
@@ -38,7 +62,16 @@ public class AddToDoItemPage extends AppCompatActivity {
 
     @Bind(R.id.fab)
     FloatingActionButton floatingActionButton;
+    String currentLocation;
 
+
+    Subscription locationSub, addressSub,
+            parseLoginFacebookSubscription, fullFbDetailsSubscription;
+
+    CompositeSubscription allSubscriptions;
+    private final int LOCATION_TIMEOUT_IN_SECONDS = 10;
+
+    private final static String TAG = AddToDoItemPage.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +79,8 @@ public class AddToDoItemPage extends AppCompatActivity {
 
         setContentView(R.layout.activity_add_to_do_item_page);
         ButterKnife.bind(this);
+
+        getRxLocation();
 
         int elevation = getResources().getDimensionPixelSize(R.dimen.toolbar_elevation);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -118,6 +153,10 @@ public class AddToDoItemPage extends AppCompatActivity {
 
 
         SearchPlaceFragment searchPlaceFragment = new SearchPlaceFragment();
+        Bundle transactionBundle = new Bundle();
+        transactionBundle.putString(SearchPlaceFragment.CURRENT_LOCATION_ARG, currentLocation);
+        searchPlaceFragment.setArguments(transactionBundle);
+
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_down)
                 .replace(R.id.fragment_container, searchPlaceFragment, SearchPlaceFragment.TAG)
@@ -177,4 +216,96 @@ public class AddToDoItemPage extends AppCompatActivity {
             return true;
         }
     }
+
+    //region Rx Calls for Location
+    public boolean isNetConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
+    private void getRxLocation() {
+        Log.d(TAG, "Getting Location");
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
+
+        LocationRequest req = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setExpirationDuration(TimeUnit.SECONDS.toMillis(LOCATION_TIMEOUT_IN_SECONDS))
+                .setInterval(5);
+
+
+        locationSub = locationProvider.getUpdatedLocation(req)
+                .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
+                .first()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Location>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                        Toast.makeText(AddToDoItemPage.this, "Couldn't get location",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onNext(Location location) {
+
+                        DecimalFormat formatter = new DecimalFormat("##.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+                        formatter.setRoundingMode(RoundingMode.HALF_UP);
+
+                        Log.d(TAG, "Lat = " +
+                                formatter.format(location.getLatitude()) + " Long = "
+                                + formatter.format(location.getLongitude()));
+
+                        if (isNetConnected())
+                            getRxAddress(location);
+                        else {
+                            Toast.makeText(AddToDoItemPage.this, "Couldn't lookup address",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    private void getRxAddress(Location location) {
+
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
+        Observable<List<Address>> reverseGeocodeObservable = locationProvider
+                .getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
+
+        addressSub = reverseGeocodeObservable
+                .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<Address>>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(AddToDoItemPage.this, "Couldn't lookup address",
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(List<Address> addresses) {
+
+                        Address addressItem = addresses.get(0);
+
+                        String address = addressItem.getAddressLine(1);
+
+                        currentLocation = address;
+                        todoItemLocationText.setText(address);
+
+                    }
+                });
+    }
+    //endregion
 }

@@ -52,13 +52,6 @@ public class PlacesActivity extends AppCompatActivity {
         currentPlaceView = (TextView) findViewById(R.id.current_place_view);
         queryView = (EditText) findViewById(R.id.place_query_view);
         placeSuggestionsList = (ListView) findViewById(R.id.place_suggestions_list);
-//        placeSuggestionsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                AutocompleteInfo info = (AutocompleteInfo) parent.getAdapter().getItem(position);
-//            }
-//        });
-
         reactiveLocationProvider = new ReactiveLocationProvider(this);
     }
 

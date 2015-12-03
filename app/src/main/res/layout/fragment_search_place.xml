@@ -37,7 +37,7 @@
                     android:src="@drawable/ic_arrow_back_black_24dp" />
 
                 <EditText
-                    android:id="@+id/search_items_edit_text"
+                    android:id="@+id/search_location_edit_text"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
@@ -119,8 +119,8 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="0.3dp"
-                android:background="@color/twenty_percent_black"
+                android:layout_height="0.1dp"
+                android:background="@color/ten_percent_black"
                 android:visibility="visible" />
 
             <TextView
