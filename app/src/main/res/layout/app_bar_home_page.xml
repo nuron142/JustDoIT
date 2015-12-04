@@ -21,7 +21,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_home_page" />
+    <include layout="@layout/content_activity_home" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/add_new_item"
