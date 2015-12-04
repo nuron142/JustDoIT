@@ -41,10 +41,10 @@ import rx.subscriptions.CompositeSubscription;
 
 public class LoginActivity extends AppCompatActivity {
 
-    ParseUser parseUser;
     CompositeSubscription allSubscriptions;
 
     private final static String TAG = LoginActivity.class.getSimpleName();
+    public final static String USER_ACCOUNT_NAME = "account_name";
 
     @Bind(R.id.login_email_text)
     MaterialEditText loginEmail;
@@ -169,9 +169,10 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "Initiating sign up process");
 
         final ParseUser user = new ParseUser();
-        user.setUsername(loginName.getText().toString());
+        user.setUsername(loginEmail.getText().toString());
         user.setPassword(loginPass.getText().toString());
         user.setEmail(loginEmail.getText().toString());
+        user.put(USER_ACCOUNT_NAME, loginName.getText().toString());
 
         allSubscriptions.add(
                 Observable.
@@ -187,9 +188,13 @@ public class LoginActivity extends AppCompatActivity {
                             public void onCompleted() {
                                 Log.d(TAG, "Sign Up successful");
                                 progressWheel.stopSpinning();
-                                Toast.makeText(getApplicationContext(),
-                                        "Sign Up successful", Toast.LENGTH_SHORT).show();
-                                launchHomeActivity();
+                                ParseUser currentUser = ParseUser.getCurrentUser();
+                                if (currentUser != null) {
+                                    Toast.makeText(getApplicationContext(),
+                                            "Welcome " + currentUser.get(USER_ACCOUNT_NAME),
+                                            Toast.LENGTH_SHORT).show();
+                                    launchHomeActivity();
+                                }
                             }
 
                             @Override
@@ -197,7 +202,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Log.d(TAG, "Exception during SignUp : " + e);
                                 progressWheel.stopSpinning();
                                 Toast.makeText(LoginActivity.this,
-                                        e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
                             }
 
@@ -207,24 +212,6 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         })
         );
-
-//        user.signUpInBackground(new SignUpCallback() {
-//            public void done(ParseException e) {
-//                if (e == null) {
-//                    Log.d(TAG, "Sign Up successful");
-//                    progressWheel.stopSpinning();
-//                    Toast.makeText(getApplicationContext(),
-//                            "Sign Up successful", Toast.LENGTH_SHORT).show();
-//                    launchHomeActivity();
-//
-//                } else {
-//
-//                    Log.d(TAG, "Exception during SignUp : " + e);
-//                    Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-//
-//                }
-//            }
-//        });
     }
 
 
@@ -232,12 +219,6 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private void getUserDetailsFromParse() {
-        parseUser = ParseUser.getCurrentUser();
-        Toast.makeText(LoginActivity.this, "Welcome back " + parseUser.getUsername(),
-                Toast.LENGTH_SHORT).show();
     }
 
     private void retrieveData() {
@@ -294,8 +275,9 @@ public class LoginActivity extends AppCompatActivity {
                                 }
 
                                 ParseUser parseUser = ParseUser.getCurrentUser();
-                                if (!fbUser.getFbName().equals(parseUser.getUsername())) {
-                                    parseUser.setUsername(fbUser.getFbName());
+                                if (parseUser.get(USER_ACCOUNT_NAME) == null ||
+                                        !fbUser.getFbName().equals(parseUser.get(USER_ACCOUNT_NAME))) {
+                                    parseUser.put(USER_ACCOUNT_NAME, fbUser.getFbName());
                                     return ParseObservable.save(parseUser);
                                 }
                                 return Observable.empty();
@@ -310,6 +292,9 @@ public class LoginActivity extends AppCompatActivity {
                                 try {
                                     ParseUser currentUser = ParseUser.getCurrentUser();
                                     if (currentUser != null) {
+                                        Toast.makeText(getApplicationContext(),
+                                                "Welcome " + currentUser.get(USER_ACCOUNT_NAME),
+                                                Toast.LENGTH_SHORT).show();
                                         launchHomeActivity();
                                     }
                                 } catch (Exception e) {
@@ -335,6 +320,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onStop();
 
         allSubscriptions.unsubscribe();
+        allSubscriptions = null;
     }
 
     @Override
@@ -345,10 +331,19 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (showSignUpLayout.getVisibility() == View.GONE) {
+
+        if (progressWheel.isSpinning()) {
+            Log.d(TAG, "progressWheel.isSpinning() is true");
+            progressWheel.stopSpinning();
+            allSubscriptions.unsubscribe();
+            allSubscriptions = new CompositeSubscription();
+
+        } else if (showSignUpLayout.getVisibility() == View.GONE) {
+
             signInLayout.setVisibility(View.VISIBLE);
             signUpLayout.setVisibility(View.INVISIBLE);
             showSignUpLayout.setVisibility(View.VISIBLE);
+
         } else {
             super.onBackPressed();
         }
