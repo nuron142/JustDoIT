@@ -104,7 +104,19 @@
                 android:layout_gravity="center"
                 android:textSize="16sp"/>
 
+
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:id="@+id/progress_wheel"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="48dp"
+                app:matProg_barColor="#5588FF"
+                android:layout_gravity="center"
+                app:matProg_progressIndeterminate="true" />
+
         </LinearLayout>
+
+
 
     </android.support.percent.PercentRelativeLayout>
 

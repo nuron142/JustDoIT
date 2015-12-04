@@ -21,6 +21,10 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationRequest;
+import com.parse.ParseACL;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+import com.pnikosis.materialishprogress.ProgressWheel;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.math.RoundingMode;
@@ -39,6 +43,7 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.parse.ParseObservable;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -65,6 +70,12 @@ public class AddToDoItemActivity extends AppCompatActivity {
 
     @Bind(R.id.fab)
     FloatingActionButton floatingActionButton;
+
+
+    @Bind(R.id.progress_wheel)
+    ProgressWheel progressWheel;
+
+
     String currentLocation;
 
 
@@ -77,6 +88,7 @@ public class AddToDoItemActivity extends AppCompatActivity {
     private final static String TAG = AddToDoItemActivity.class.getSimpleName();
 
     String dateString, timeString;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +97,8 @@ public class AddToDoItemActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_to_do_item_page);
         ButterKnife.bind(this);
 
+        context = this;
+        progressWheel.stopSpinning();
         getRxLocation();
 
         int elevation = getResources().getDimensionPixelSize(R.dimen.toolbar_elevation);
@@ -184,6 +198,49 @@ public class AddToDoItemActivity extends AppCompatActivity {
 
     @OnClick(R.id.fab)
     public void saveItemToDo() {
+
+        if (todoItemNameText.getText().length() < 1) {
+            Toast.makeText(this, "To Do can't be blank", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (todoDateText.getText().length() < 1) {
+            Toast.makeText(this, "Date can't be blank", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressWheel.spin();
+
+        ParseObject privateNote = new ParseObject("Note");
+        privateNote.put("todo", todoItemNameText.getText().toString());
+        privateNote.put("time", todoDateText.getText().toString());
+        privateNote.put("location", todoItemLocationText.getText().toString());
+        privateNote.setACL(new ParseACL(ParseUser.getCurrentUser()));
+
+        ParseObservable.save(privateNote)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<ParseObject>() {
+                    @Override
+                    public void onCompleted() {
+                        progressWheel.stopSpinning();
+                        Toast.makeText(getApplicationContext(),
+                                "Successfully saved", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(context,
+                                "Couldn't save. Please try again", Toast.LENGTH_SHORT).show();
+                        progressWheel.stopSpinning();
+                    }
+
+                    @Override
+                    public void onNext(ParseObject parseObject) {
+
+                    }
+                });
 
     }
 
