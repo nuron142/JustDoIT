@@ -2,7 +2,6 @@ package com.nuron.justdoit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,9 +10,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -22,18 +23,24 @@ import com.parse.ParseUser;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.parse.ParseObservable;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private final static String TAG = HomeActivity.class.getSimpleName();
 
     @Bind(R.id.recycler_view)
     RecyclerView recyclerView;
 
     ToDoRecyclerAdapter toDoRecyclerAdapter;
+    CompositeSubscription allSubscriptions;
+    Observable loadToDoItemsObservable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +48,6 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
         ButterKnife.bind(this);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -76,14 +82,31 @@ public class HomeActivity extends AppCompatActivity
                 userEmailTextView.setText(userEmail);
             }
         }
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        allSubscriptions = new CompositeSubscription();
         loadToDoItems();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        if (allSubscriptions != null && allSubscriptions.isUnsubscribed()) {
+            allSubscriptions.unsubscribe();
+            allSubscriptions = null;
+        }
+    }
+
+
     private void loadToDoItems() {
 
+        toDoRecyclerAdapter.clear();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ToDoItem.TODO_TABLE_NAME);
-        ParseObservable.find(query)
+        allSubscriptions.add(ParseObservable.find(query)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<ParseObject>() {
                     @Override
@@ -100,7 +123,7 @@ public class HomeActivity extends AppCompatActivity
                     public void onNext(ParseObject parseObject) {
                         toDoRecyclerAdapter.addData(parseObject);
                     }
-                });
+                }));
     }
 
     @OnClick(R.id.fab)
@@ -128,30 +151,48 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.logout) {
-            ParseUser.logOut();
+
             DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             drawer.closeDrawer(GravityCompat.START);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
 
-                    Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            }, 200);
+            allSubscriptions.add(ParseObservable.logOut()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<Void>() {
+                        @Override
+                        public void onCompleted() {
+                            Log.d(TAG, "Logged out successfully");
+                            Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.d(TAG, "Logout failed : " + e);
+                            Toast.makeText(HomeActivity.this, "Logout failed : " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onNext(Void aVoid) {
+
+                        }
+                    }));
         }
         return true;
     }
 
-    public void deleteToDoItem(ParseObject parseObject, final int position) {
-        ParseObservable.delete(parseObject)
+    public void deleteToDoItem(ParseObject parseObject, final int position, final int itemCount) {
+
+        allSubscriptions.add(ParseObservable.delete(parseObject)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<ParseObject>() {
                     @Override
                     public void onCompleted() {
                         toDoRecyclerAdapter.removeData(position);
                         toDoRecyclerAdapter.notifyItemRemoved(position);
+                        toDoRecyclerAdapter.notifyItemRangeChanged(position, itemCount);
                     }
 
                     @Override
@@ -163,8 +204,7 @@ public class HomeActivity extends AppCompatActivity
                     public void onNext(ParseObject parseObject) {
 
                     }
-                });
+                }));
 
     }
-
 }

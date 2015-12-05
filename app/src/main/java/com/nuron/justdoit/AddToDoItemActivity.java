@@ -71,16 +71,11 @@ public class AddToDoItemActivity extends AppCompatActivity {
     @Bind(R.id.fab)
     FloatingActionButton floatingActionButton;
 
-
     @Bind(R.id.progress_wheel)
     ProgressWheel progressWheel;
 
-
     String currentLocation;
-
-
-    Subscription locationSub, addressSub,
-            parseLoginFacebookSubscription, fullFbDetailsSubscription;
+    Subscription locationSub, addressSub;
 
     CompositeSubscription allSubscriptions;
     private final int LOCATION_TIMEOUT_IN_SECONDS = 10;

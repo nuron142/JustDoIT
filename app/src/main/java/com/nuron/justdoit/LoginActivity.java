@@ -10,7 +10,6 @@ import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -21,7 +20,6 @@ import org.json.JSONException;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
-import bolts.Task;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -100,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "Initiating login process");
 
         allSubscriptions.add(
-                ParseObservable.logIn(loginEmail.getText().toString(),
+                ParseObservable.logIn(loginEmail.getText().toString().toLowerCase(),
                         loginPass.getText().toString())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Subscriber<ParseUser>() {
@@ -171,14 +169,16 @@ public class LoginActivity extends AppCompatActivity {
 
         allSubscriptions.add(
                 Observable.
-                        fromCallable(new Callable<Task<Void>>() {
+                        fromCallable(new Callable<Void>() {
                             @Override
-                            public Task<Void> call() throws Exception {
-                                return user.signUpInBackground();
+                            public Void call() throws Exception {
+                                user.signUp();
+                                return null;
                             }
                         })
+                        .subscribeOn(Schedulers.newThread())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Subscriber<Task<Void>>() {
+                        .subscribe(new Subscriber<Void>() {
                             @Override
                             public void onCompleted() {
                                 Log.d(TAG, "Sign Up successful");
@@ -202,9 +202,10 @@ public class LoginActivity extends AppCompatActivity {
                             }
 
                             @Override
-                            public void onNext(Task<Void> voidTask) {
+                            public void onNext(Void aVoid) {
 
                             }
+
                         })
         );
     }
@@ -228,15 +229,22 @@ public class LoginActivity extends AppCompatActivity {
                             @Override
                             public Observable<GraphResponse> call(ParseUser parseUser) {
 
-                                return Observable.fromCallable(new Callable<GraphResponse>() {
-                                    @Override
-                                    public GraphResponse call() throws Exception {
-                                        Log.d(TAG, "Returning GraphRequest");
-                                        return new GraphRequest(
-                                                AccessToken.getCurrentAccessToken(),
-                                                "/me", null, HttpMethod.GET).executeAndWait();
-                                    }
-                                });
+                                if (parseUser.isNew()) {
+                                    Log.d(TAG, "Fb user is new");
+                                    return Observable.fromCallable(new Callable<GraphResponse>() {
+                                        @Override
+                                        public GraphResponse call() throws Exception {
+                                            Bundle parameters = new Bundle();
+                                            parameters.putString("fields", "id,name,email");
+                                            return new GraphRequest(
+                                                    AccessToken.getCurrentAccessToken(), "me",
+                                                    parameters, null).executeAndWait();
+                                        }
+                                    });
+                                } else {
+                                    Log.d(TAG, "Fb user is NOT new");
+                                    return Observable.empty();
+                                }
                             }
                         })
                         .flatMap(new Func1<GraphResponse, Observable<ParseUser>>() {
@@ -256,12 +264,9 @@ public class LoginActivity extends AppCompatActivity {
                                 }
 
                                 ParseUser parseUser = ParseUser.getCurrentUser();
-                                if (parseUser.get(USER_ACCOUNT_NAME) == null ||
-                                        !fbUser.getFbName().equals(parseUser.get(USER_ACCOUNT_NAME))) {
-                                    parseUser.put(USER_ACCOUNT_NAME, fbUser.getFbName());
-                                    return ParseObservable.save(parseUser);
-                                }
-                                return Observable.empty();
+                                parseUser.put(USER_ACCOUNT_NAME, fbUser.getFbName());
+                                parseUser.setEmail(fbUser.getFbMail());
+                                return ParseObservable.save(parseUser);
                             }
                         })
                         .subscribeOn(Schedulers.newThread())
@@ -300,8 +305,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        allSubscriptions.unsubscribe();
-        allSubscriptions = null;
+        if (allSubscriptions != null && allSubscriptions.isUnsubscribed()) {
+            allSubscriptions.unsubscribe();
+            allSubscriptions = null;
+        }
     }
 
     @Override
@@ -316,8 +323,12 @@ public class LoginActivity extends AppCompatActivity {
         if (progressWheel.isSpinning()) {
             Log.d(TAG, "progressWheel.isSpinning() is true");
             progressWheel.stopSpinning();
-            allSubscriptions.unsubscribe();
-            allSubscriptions = new CompositeSubscription();
+
+            if (allSubscriptions != null && allSubscriptions.isUnsubscribed()) {
+                allSubscriptions.unsubscribe();
+                allSubscriptions = null;
+                allSubscriptions = new CompositeSubscription();
+            }
 
         } else if (showSignUpLayout.getVisibility() == View.GONE) {
 
