@@ -38,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private final static String TAG = LoginActivity.class.getSimpleName();
     public final static String USER_ACCOUNT_NAME = "account_name";
+    public final static String USER_PERSONAL_EMAIL = "personal_email";
+
 
     @Bind(R.id.login_email_text)
     MaterialEditText loginEmail;
@@ -97,35 +99,35 @@ public class LoginActivity extends AppCompatActivity {
         progressWheel.spin();
         Log.d(TAG, "Initiating login process");
 
-        allSubscriptions.add(
-                ParseObservable.logIn(loginEmail.getText().toString().toLowerCase(),
-                        loginPass.getText().toString())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Subscriber<ParseUser>() {
-                            @Override
-                            public void onCompleted() {
-                            }
+        allSubscriptions.add(ParseObservable.logIn(
+                loginEmail.getText().toString().toLowerCase(), loginPass.getText().toString())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<ParseUser>() {
+                    @Override
+                    public void onCompleted() {
+                    }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                Log.d(TAG, "Login failed : " + e);
-                                progressWheel.stopSpinning();
-                                Toast.makeText(LoginActivity.this, e.getMessage(),
-                                        Toast.LENGTH_SHORT).show();
-                            }
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "Login failed : " + e);
+                        progressWheel.stopSpinning();
+                        Toast.makeText(LoginActivity.this, e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
 
-                            @Override
-                            public void onNext(ParseUser parseUser) {
-                                if (parseUser != null) {
-                                    Log.d(TAG, "Login successful");
-                                    progressWheel.stopSpinning();
-                                    Toast.makeText(getApplicationContext(), "Welcome back " +
-                                                    ParseUser.getCurrentUser().getUsername(),
-                                            Toast.LENGTH_SHORT).show();
-                                    launchHomeActivity();
-                                }
-                            }
-                        }));
+                    @Override
+                    public void onNext(ParseUser parseUser) {
+                        if (parseUser != null) {
+                            Log.d(TAG, "Login successful");
+                            progressWheel.stopSpinning();
+                            Toast.makeText(getApplicationContext(), "Welcome back " +
+                                            ParseUser.getCurrentUser().getUsername(),
+                                    Toast.LENGTH_SHORT).show();
+                            launchHomeActivity();
+                        }
+                    }
+                })
+        );
     }
 
     @OnClick(R.id.parse_show_signup)
@@ -165,48 +167,48 @@ public class LoginActivity extends AppCompatActivity {
         user.setUsername(loginEmail.getText().toString());
         user.setPassword(loginPass.getText().toString());
         user.setEmail(loginEmail.getText().toString());
+        user.put(USER_PERSONAL_EMAIL, loginEmail.getText().toString());
         user.put(USER_ACCOUNT_NAME, loginName.getText().toString());
 
-        allSubscriptions.add(
-                Observable.
-                        fromCallable(new Callable<Void>() {
-                            @Override
-                            public Void call() throws Exception {
-                                user.signUp();
-                                return null;
-                            }
-                        })
-                        .subscribeOn(Schedulers.newThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Subscriber<Void>() {
-                            @Override
-                            public void onCompleted() {
-                                Log.d(TAG, "Sign Up successful");
-                                progressWheel.stopSpinning();
-                                ParseUser currentUser = ParseUser.getCurrentUser();
-                                if (currentUser != null) {
-                                    Toast.makeText(getApplicationContext(),
-                                            "Welcome " + currentUser.get(USER_ACCOUNT_NAME),
-                                            Toast.LENGTH_SHORT).show();
-                                    launchHomeActivity();
-                                }
-                            }
+        allSubscriptions.add(Observable.fromCallable(
+                new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        user.signUp();
+                        return null;
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "Sign Up successful");
+                        progressWheel.stopSpinning();
+                        ParseUser currentUser = ParseUser.getCurrentUser();
+                        if (currentUser != null) {
+                            Toast.makeText(getApplicationContext(),
+                                    "Welcome " + currentUser.get(USER_ACCOUNT_NAME),
+                                    Toast.LENGTH_SHORT).show();
+                            launchHomeActivity();
+                        }
+                    }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                Log.d(TAG, "Exception during SignUp : " + e);
-                                progressWheel.stopSpinning();
-                                Toast.makeText(LoginActivity.this,
-                                        "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "Exception during SignUp : " + e);
+                        progressWheel.stopSpinning();
+                        Toast.makeText(LoginActivity.this,
+                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
-                            }
+                    }
 
-                            @Override
-                            public void onNext(Void aVoid) {
+                    @Override
+                    public void onNext(Void aVoid) {
 
-                            }
+                    }
 
-                        })
+                })
         );
     }
 
@@ -222,83 +224,83 @@ public class LoginActivity extends AppCompatActivity {
 
         progressWheel.spin();
 
-        allSubscriptions.add(
-                ParseFacebookObservable.logInWithReadPermissions(LoginActivity.this,
-                        Arrays.asList("public_profile", "email"))
-                        .flatMap(new Func1<ParseUser, Observable<GraphResponse>>() {
-                            @Override
-                            public Observable<GraphResponse> call(ParseUser parseUser) {
+        allSubscriptions.add(ParseFacebookObservable.logInWithReadPermissions(LoginActivity.this,
+                Arrays.asList("public_profile", "email"))
+                .flatMap(new Func1<ParseUser, Observable<GraphResponse>>() {
+                    @Override
+                    public Observable<GraphResponse> call(ParseUser parseUser) {
 
-                                if (parseUser.isNew()) {
-                                    Log.d(TAG, "Fb user is new");
-                                    return Observable.fromCallable(new Callable<GraphResponse>() {
-                                        @Override
-                                        public GraphResponse call() throws Exception {
-                                            Bundle parameters = new Bundle();
-                                            parameters.putString("fields", "id,name,email");
-                                            return new GraphRequest(
-                                                    AccessToken.getCurrentAccessToken(), "me",
-                                                    parameters, null).executeAndWait();
-                                        }
-                                    });
-                                } else {
-                                    Log.d(TAG, "Fb user is NOT new");
-                                    return Observable.empty();
+                        if (parseUser.isNew()) {
+                            Log.d(TAG, "Fb user is new");
+                            return Observable.fromCallable(new Callable<GraphResponse>() {
+                                @Override
+                                public GraphResponse call() throws Exception {
+                                    Bundle parameters = new Bundle();
+                                    parameters.putString("fields", "id,name,email");
+                                    return new GraphRequest(
+                                            AccessToken.getCurrentAccessToken(), "me",
+                                            parameters, null).executeAndWait();
                                 }
-                            }
-                        })
-                        .flatMap(new Func1<GraphResponse, Observable<ParseUser>>() {
-                            @Override
-                            public Observable<ParseUser> call(GraphResponse graphResponse) {
+                            });
+                        } else {
+                            Log.d(TAG, "Fb user is NOT new");
+                            return Observable.empty();
+                        }
+                    }
+                })
+                .flatMap(new Func1<GraphResponse, Observable<ParseUser>>() {
+                    @Override
+                    public Observable<ParseUser> call(GraphResponse graphResponse) {
 
-                                Log.d(TAG, "graphResponse : " + graphResponse.getRawResponse());
+                        Log.d(TAG, "graphResponse : " + graphResponse.getRawResponse());
 
-                                FbUser fbUser = new FbUser();
-                                try {
-                                    fbUser.setFbName(
-                                            graphResponse.getJSONObject().getString("name"));
-                                    fbUser.setFbMail(
-                                            graphResponse.getJSONObject().getString("email"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
+                        FbUser fbUser = new FbUser();
+                        try {
+                            fbUser.setFbName(
+                                    graphResponse.getJSONObject().getString("name"));
+                            fbUser.setFbMail(
+                                    graphResponse.getJSONObject().getString("email"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
-                                ParseUser parseUser = ParseUser.getCurrentUser();
-                                parseUser.put(USER_ACCOUNT_NAME, fbUser.getFbName());
-                                parseUser.setEmail(fbUser.getFbMail());
-                                return ParseObservable.save(parseUser);
+                        ParseUser parseUser = ParseUser.getCurrentUser();
+                        parseUser.put(USER_ACCOUNT_NAME, fbUser.getFbName());
+                        parseUser.put(USER_PERSONAL_EMAIL, fbUser.getFbMail());
+                        return ParseObservable.save(parseUser);
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<ParseUser>() {
+                    @Override
+                    public void onCompleted() {
+                        progressWheel.stopSpinning();
+                        try {
+                            ParseUser currentUser = ParseUser.getCurrentUser();
+                            if (currentUser != null) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Welcome " + currentUser.get(USER_ACCOUNT_NAME),
+                                        Toast.LENGTH_SHORT).show();
+                                launchHomeActivity();
                             }
-                        })
-                        .subscribeOn(Schedulers.newThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Subscriber<ParseUser>() {
-                            @Override
-                            public void onCompleted() {
-                                progressWheel.stopSpinning();
-                                try {
-                                    ParseUser currentUser = ParseUser.getCurrentUser();
-                                    if (currentUser != null) {
-                                        Toast.makeText(getApplicationContext(),
-                                                "Welcome " + currentUser.get(USER_ACCOUNT_NAME),
-                                                Toast.LENGTH_SHORT).show();
-                                        launchHomeActivity();
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                Log.d(TAG, "Successfully completed");
-                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.d(TAG, "Successfully completed");
+                    }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                progressWheel.stopSpinning();
-                                Log.d(TAG, "Exception occured : " + e);
-                            }
+                    @Override
+                    public void onError(Throwable e) {
+                        progressWheel.stopSpinning();
+                        Log.d(TAG, "Exception occured : " + e);
+                    }
 
-                            @Override
-                            public void onNext(ParseUser parseUser) {
-                            }
-                        }));
+                    @Override
+                    public void onNext(ParseUser parseUser) {
+                    }
+                })
+        );
     }
 
     @Override

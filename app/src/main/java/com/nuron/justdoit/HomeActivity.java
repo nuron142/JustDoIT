@@ -38,6 +38,9 @@ public class HomeActivity extends AppCompatActivity
     @Bind(R.id.recycler_view)
     RecyclerView recyclerView;
 
+    @Bind(R.id.empty_items_layout)
+    TextView emptyItemsLayout;
+
     ToDoRecyclerAdapter toDoRecyclerAdapter;
     CompositeSubscription allSubscriptions;
     Observable loadToDoItemsObservable;
@@ -73,7 +76,7 @@ public class HomeActivity extends AppCompatActivity
         ParseUser parseUser = ParseUser.getCurrentUser();
         if (parseUser != null) {
             String userName = parseUser.getString(LoginActivity.USER_ACCOUNT_NAME);
-            String userEmail = parseUser.getEmail();
+            String userEmail = parseUser.getString(LoginActivity.USER_PERSONAL_EMAIL);
             if (userName != null) {
                 userNameTextView.setText(userName);
             }
@@ -104,6 +107,7 @@ public class HomeActivity extends AppCompatActivity
 
     private void loadToDoItems() {
 
+        emptyItemsLayout.setVisibility(View.GONE);
         toDoRecyclerAdapter.clear();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ToDoItem.TODO_TABLE_NAME);
         allSubscriptions.add(ParseObservable.find(query)
@@ -111,6 +115,10 @@ public class HomeActivity extends AppCompatActivity
                 .subscribe(new Subscriber<ParseObject>() {
                     @Override
                     public void onCompleted() {
+
+                        if (toDoRecyclerAdapter.getItemCount() == 0) {
+                            emptyItemsLayout.setVisibility(View.VISIBLE);
+                        }
                         toDoRecyclerAdapter.notifyDataSetChanged();
                     }
 
@@ -123,7 +131,8 @@ public class HomeActivity extends AppCompatActivity
                     public void onNext(ParseObject parseObject) {
                         toDoRecyclerAdapter.addData(parseObject);
                     }
-                }));
+                })
+        );
     }
 
     @OnClick(R.id.fab)
@@ -155,35 +164,41 @@ public class HomeActivity extends AppCompatActivity
             DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             drawer.closeDrawer(GravityCompat.START);
 
-            allSubscriptions.add(ParseObservable.logOut()
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<Void>() {
-                        @Override
-                        public void onCompleted() {
-                            Log.d(TAG, "Logged out successfully");
-                            Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-                            startActivity(intent);
-                            finish();
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.d(TAG, "Logout failed : " + e);
-                            Toast.makeText(HomeActivity.this, "Logout failed : " + e.getMessage(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onNext(Void aVoid) {
-
-                        }
-                    }));
+            logOutUser();
         }
         return true;
     }
 
-    public void deleteToDoItem(ParseObject parseObject, final int position, final int itemCount) {
+    public void logOutUser() {
+
+        allSubscriptions.add(ParseObservable.logOut()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "Logged out successfully");
+                        Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "Logout failed : " + e);
+                        Toast.makeText(HomeActivity.this, "Logout failed : " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onNext(Void aVoid) {
+
+                    }
+                })
+        );
+    }
+
+    public void deleteToDoItem(ParseObject parseObject, final int position) {
 
         allSubscriptions.add(ParseObservable.delete(parseObject)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -192,7 +207,12 @@ public class HomeActivity extends AppCompatActivity
                     public void onCompleted() {
                         toDoRecyclerAdapter.removeData(position);
                         toDoRecyclerAdapter.notifyItemRemoved(position);
-                        toDoRecyclerAdapter.notifyItemRangeChanged(position, itemCount);
+                        toDoRecyclerAdapter.notifyItemRangeChanged(position,
+                                toDoRecyclerAdapter.getItemCount());
+
+                        if (toDoRecyclerAdapter.getItemCount() == 0) {
+                            emptyItemsLayout.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
@@ -204,7 +224,7 @@ public class HomeActivity extends AppCompatActivity
                     public void onNext(ParseObject parseObject) {
 
                     }
-                }));
-
+                })
+        );
     }
 }

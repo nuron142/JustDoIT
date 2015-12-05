@@ -19,6 +19,16 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/toolbar">
 
+        <TextView
+            android:id="@+id/empty_items_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add some Todo items  :)"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:layout_centerInParent="true"/>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
