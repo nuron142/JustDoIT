@@ -11,11 +11,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.parse.FindCallback;
-import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.rengwuxian.materialedittext.MaterialEditText;
@@ -23,7 +19,6 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import org.json.JSONException;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import bolts.Task;
@@ -219,20 +214,6 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private void retrieveData() {
-
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Note");
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> scoreList, ParseException e) {
-                if (e == null) {
-                    Log.d("score", "Retrieved " + scoreList.size() + " scores");
-                } else {
-                    Log.d("score", "Error: " + e.getMessage());
-                }
-            }
-        });
     }
 
     @OnClick(R.id.facebook_login)

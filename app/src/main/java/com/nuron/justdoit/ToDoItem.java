@@ -5,18 +5,33 @@ package com.nuron.justdoit;
  */
 public class ToDoItem {
 
-    private String itemText;
+    public final static String TODO_TABLE_NAME = "ToDo";
+    public final static String TODO_ITEM_NAME = "toDoName";
+    public final static String TODO_ITEM_DATE = "toDoDate";
+    public final static String TODO_ITEM_DUE_DATE = "toDoDueDate";
+    public final static String TODO_ITEM_LOCATION = "toDoLocation";
+
+    private String itemName;
     private String location;
     private String date;
     private String dueTime;
+    private String parseId;
 
 
-    public String getItemText() {
-        return itemText;
+    public String getParseId() {
+        return parseId;
     }
 
-    public void setItemText(String itemText) {
-        this.itemText = itemText;
+    public void setParseId(String parseId) {
+        this.parseId = parseId;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 
     public String getLocation() {

@@ -211,10 +211,11 @@ public class AddToDoItemActivity extends AppCompatActivity {
 
         progressWheel.spin();
 
-        ParseObject privateNote = new ParseObject("Note");
-        privateNote.put("todo", todoItemNameText.getText().toString());
-        privateNote.put("time", todoDateText.getText().toString());
-        privateNote.put("location", todoItemLocationText.getText().toString());
+        ParseObject privateNote = new ParseObject(ToDoItem.TODO_TABLE_NAME);
+        privateNote.put(ToDoItem.TODO_TABLE_NAME, todoItemNameText.getText().toString());
+        privateNote.put(ToDoItem.TODO_ITEM_DATE, todoDateText.getText().toString());
+        privateNote.put(ToDoItem.TODO_ITEM_DUE_DATE, todoDateText.getText().toString());
+        privateNote.put(ToDoItem.TODO_ITEM_LOCATION, todoItemLocationText.getText().toString());
         privateNote.setACL(new ParseACL(ParseUser.getCurrentUser()));
 
         ParseObservable.save(privateNote)
