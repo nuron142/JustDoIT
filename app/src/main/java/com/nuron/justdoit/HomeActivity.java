@@ -1,7 +1,12 @@
 package com.nuron.justdoit;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -120,6 +125,8 @@ public class HomeActivity extends AppCompatActivity
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         }
                         toDoRecyclerAdapter.notifyDataSetChanged();
+
+                        scheduleNotification(getNotification("5 second delay"), 5000);
                     }
 
                     @Override
@@ -226,5 +233,30 @@ public class HomeActivity extends AppCompatActivity
                     }
                 })
         );
+    }
+
+
+    private void scheduleNotification(Notification notification, int delay) {
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
+
+    private Notification getNotification(String content) {
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setContentTitle("Scheduled Notification");
+        builder.setContentText(content);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+
+        Notification.Action.Builder action =
+                new Notification.Action.Builder(R.drawable.ic_clear_black_24dp, "Dismiss", null);
+
+        return builder.build();
     }
 }
