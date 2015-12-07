@@ -52,7 +52,8 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
 
-        <receiver android:name=".NotificationPublisher" />
+        <receiver android:name=".Notification.NotificationPublisher" />
+        <receiver android:name=".Notification.DismissNotification" />
     </application>
 
 </manifest>

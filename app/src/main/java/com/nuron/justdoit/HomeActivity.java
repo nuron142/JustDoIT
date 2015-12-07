@@ -1,7 +1,6 @@
 package com.nuron.justdoit;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +20,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nuron.justdoit.Notification.NotificationPublisher;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -125,8 +125,6 @@ public class HomeActivity extends AppCompatActivity
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         }
                         toDoRecyclerAdapter.notifyDataSetChanged();
-
-                        scheduleNotification(getNotification("5 second delay"), 5000);
                     }
 
                     @Override
@@ -137,6 +135,7 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onNext(ParseObject parseObject) {
                         toDoRecyclerAdapter.addData(parseObject);
+                        scheduleNotification(parseObject, 5000);
                     }
                 })
         );
@@ -236,27 +235,24 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-    private void scheduleNotification(Notification notification, int delay) {
+    private void scheduleNotification(ParseObject parseObject, int delay) {
 
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID,
+                parseObject.getObjectId().hashCode());
+
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_CONTENT_TITLE,
+                parseObject.getString(ToDoItem.TODO_ITEM_NAME));
+
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_CONTENT_TEXT,
+                parseObject.getString(ToDoItem.TODO_ITEM_LOCATION));
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         long futureInMillis = SystemClock.elapsedRealtime() + delay;
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
-    }
-
-    private Notification getNotification(String content) {
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle("Scheduled Notification");
-        builder.setContentText(content);
-        builder.setSmallIcon(R.mipmap.ic_launcher);
-
-        Notification.Action.Builder action =
-                new Notification.Action.Builder(R.drawable.ic_clear_black_24dp, "Dismiss", null);
-
-        return builder.build();
     }
 }

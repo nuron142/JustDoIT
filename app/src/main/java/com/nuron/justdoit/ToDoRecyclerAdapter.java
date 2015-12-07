@@ -55,7 +55,7 @@ public class ToDoRecyclerAdapter extends RecyclerView.Adapter<ToDoRecyclerAdapte
         final ParseObject parseObject = parseObjectList.get(position);
 
         viewHolder.todoItemName.setText("Name : " +
-                parseObject.getString(ToDoItem.TODO_TABLE_NAME));
+                parseObject.getString(ToDoItem.TODO_ITEM_NAME));
         viewHolder.todoItemDate.setText("Date : " +
                 parseObject.getString(ToDoItem.TODO_ITEM_DATE));
         viewHolder.todoItemDueDate.setText("Due : " +
