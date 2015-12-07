@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.nuron.justdoit.Activities.HomeActivity;
+import com.nuron.justdoit.Model.ToDoItem;
+import com.nuron.justdoit.R;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;

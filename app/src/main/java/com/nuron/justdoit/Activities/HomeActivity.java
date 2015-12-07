@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Activities;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -21,6 +21,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nuron.justdoit.Notification.NotificationPublisher;
+import com.nuron.justdoit.R;
+import com.nuron.justdoit.Model.ToDoItem;
+import com.nuron.justdoit.Adapters.ToDoRecyclerAdapter;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -135,7 +138,7 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onNext(ParseObject parseObject) {
                         toDoRecyclerAdapter.addData(parseObject);
-                        scheduleNotification(parseObject, 5000);
+                        scheduleNotification(parseObject, 5 * 60 * 1000);
                     }
                 })
         );

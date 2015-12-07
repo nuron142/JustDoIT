@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Fragments;
 
 
 import android.location.Location;
@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +19,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.jakewharton.rxbinding.widget.RxTextView;
 import com.jakewharton.rxbinding.widget.TextViewTextChangeEvent;
+import com.nuron.justdoit.R;
+import com.nuron.justdoit.Adapters.SearchLocationAdapter;
 
 import java.util.concurrent.TimeUnit;
 

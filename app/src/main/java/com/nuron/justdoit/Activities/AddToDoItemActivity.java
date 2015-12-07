@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Activities;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -21,6 +21,11 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationRequest;
+import com.nuron.justdoit.Fragments.DatePickerFragment;
+import com.nuron.justdoit.R;
+import com.nuron.justdoit.Fragments.SearchPlaceFragment;
+import com.nuron.justdoit.Fragments.TimePickerFragment;
+import com.nuron.justdoit.Model.ToDoItem;
 import com.parse.ParseACL;
 import com.parse.ParseObject;
 import com.parse.ParseUser;

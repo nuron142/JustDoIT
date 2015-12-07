@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Model;
 
 /**
  * Created by nuron on 01/12/15.

@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Fragments;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;

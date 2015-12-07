@@ -16,7 +16,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <activity
-            android:name=".LoginActivity"
+            android:name=".Activities.LoginActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -42,27 +42,21 @@
             android:label="@string/app_name"
             android:theme="@android:style/Theme.NoDisplay" />
         <activity
-            android:name=".AddToDoItemActivity"
+            android:name=".Activities.AddToDoItemActivity"
             android:label="@string/title_activity_add_to_do_item_page"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
 
         <activity
-            android:name=".HomeActivity"
+            android:name=".Activities.HomeActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
 
-        <receiver
-            android:name=".Notification.NotificationPublisher"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
+        <receiver android:name=".Notification.NotificationPublisher" />
         <receiver android:name=".Notification.DismissNotification" />
         <receiver android:name=".Notification.SnoozeNotification" />
+
     </application>
 
 </manifest>

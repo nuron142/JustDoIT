@@ -1,4 +1,4 @@
-package com.nuron.justdoit;
+package com.nuron.justdoit.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.nuron.justdoit.Model.FbUser;
+import com.nuron.justdoit.R;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
