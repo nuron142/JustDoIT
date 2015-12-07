@@ -15,11 +15,10 @@ public class DismissNotification extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         int notificationId = intent.getIntExtra(NotificationPublisher.NOTIFICATION_ID, 0);
-
         Log.d("1", "DismissNotification ID : " + notificationId);
 
-        // if you want cancel notification
-        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager manager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(notificationId);
     }
 }
