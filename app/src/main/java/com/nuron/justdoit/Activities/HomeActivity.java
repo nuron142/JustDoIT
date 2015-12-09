@@ -20,13 +20,19 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nuron.justdoit.Adapters.ToDoRecyclerAdapter;
+import com.nuron.justdoit.Model.ToDoItem;
 import com.nuron.justdoit.Notification.NotificationPublisher;
 import com.nuron.justdoit.R;
-import com.nuron.justdoit.Model.ToDoItem;
-import com.nuron.justdoit.Adapters.ToDoRecyclerAdapter;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.pnikosis.materialishprogress.ProgressWheel;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -48,6 +54,9 @@ public class HomeActivity extends AppCompatActivity
 
     @Bind(R.id.empty_items_layout)
     TextView emptyItemsLayout;
+
+    @Bind(R.id.progress_wheel)
+    ProgressWheel progressWheel;
 
     ToDoRecyclerAdapter toDoRecyclerAdapter;
     CompositeSubscription allSubscriptions;
@@ -116,6 +125,7 @@ public class HomeActivity extends AppCompatActivity
     private void loadToDoItems() {
 
         emptyItemsLayout.setVisibility(View.GONE);
+        progressWheel.spin();
         toDoRecyclerAdapter.clear();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ToDoItem.TODO_TABLE_NAME);
         allSubscriptions.add(ParseObservable.find(query)
@@ -127,6 +137,7 @@ public class HomeActivity extends AppCompatActivity
                         if (toDoRecyclerAdapter.getItemCount() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         }
+                        progressWheel.stopSpinning();
                         toDoRecyclerAdapter.notifyDataSetChanged();
                     }
 
@@ -138,7 +149,7 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onNext(ParseObject parseObject) {
                         toDoRecyclerAdapter.addData(parseObject);
-                        scheduleNotification(parseObject, 5 * 60 * 1000);
+                        scheduleNotification(parseObject);
                     }
                 })
         );
@@ -209,12 +220,18 @@ public class HomeActivity extends AppCompatActivity
 
     public void deleteToDoItem(ParseObject parseObject, final int position) {
 
+        final PendingIntent pendingIntent = getAlarmPendingIntent(parseObject);
+
+        Log.d(TAG, "Delete Notification ID : " + parseObject.getObjectId().hashCode());
+
+        progressWheel.spin();
         allSubscriptions.add(ParseObservable.delete(parseObject)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<ParseObject>() {
                     @Override
                     public void onCompleted() {
                         toDoRecyclerAdapter.removeData(position);
+                        progressWheel.stopSpinning();
                         toDoRecyclerAdapter.notifyItemRemoved(position);
                         toDoRecyclerAdapter.notifyItemRangeChanged(position,
                                 toDoRecyclerAdapter.getItemCount());
@@ -232,14 +249,48 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onNext(ParseObject parseObject) {
 
+                        AlarmManager alarmManager =
+                                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                        alarmManager.cancel(pendingIntent);
+
                     }
                 })
         );
     }
 
 
-    private void scheduleNotification(ParseObject parseObject, int delay) {
+    private void scheduleNotification(ParseObject parseObject) {
 
+        Log.d(TAG, "Schedule Notification ID : " +
+                parseObject.getObjectId().hashCode());
+
+        PendingIntent pendingIntent = getAlarmPendingIntent(parseObject);
+
+        SimpleDateFormat database = new SimpleDateFormat("hh:mm a, dd-MM-yyyy");
+        Date date;
+        try {
+            date = database.parse(parseObject.getString(ToDoItem.TODO_ITEM_DUE_DATE));
+
+            Calendar setAlarmDate = Calendar.getInstance();
+            setAlarmDate.setTime(date);
+
+            Calendar currentDate = Calendar.getInstance();
+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+            long delay = setAlarmDate.getTimeInMillis() - currentDate.getTimeInMillis();
+
+            if (delay > 0) {
+                alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        SystemClock.elapsedRealtime() + delay, pendingIntent);
+            }
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private PendingIntent getAlarmPendingIntent(ParseObject parseObject) {
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
 
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID,
@@ -252,10 +303,8 @@ public class HomeActivity extends AppCompatActivity
                 parseObject.getString(ToDoItem.TODO_ITEM_LOCATION));
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_CANCEL_CURRENT);
 
-        long futureInMillis = SystemClock.elapsedRealtime() + delay;
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+        return pendingIntent;
     }
 }

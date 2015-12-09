@@ -34,8 +34,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </RelativeLayout>
+        <com.pnikosis.materialishprogress.ProgressWheel
+            android:id="@+id/progress_wheel"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="48dp"
+            app:matProg_barColor="#5588FF"
+            android:layout_centerInParent="true"
+            app:matProg_progressIndeterminate="true" />
 
+    </RelativeLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

@@ -59,9 +59,7 @@ public class ToDoRecyclerAdapter extends RecyclerView.Adapter<ToDoRecyclerAdapte
 
         viewHolder.todoItemName.setText("Name : " +
                 parseObject.getString(ToDoItem.TODO_ITEM_NAME));
-        viewHolder.todoItemDate.setText("Date : " +
-                parseObject.getString(ToDoItem.TODO_ITEM_DATE));
-        viewHolder.todoItemDueDate.setText("Due : " +
+        viewHolder.todoItemDueDate.setText("Due Date : " +
                 parseObject.getString(ToDoItem.TODO_ITEM_DUE_DATE));
         viewHolder.todoItemLocation.setText("Location : " +
                 parseObject.getString(ToDoItem.TODO_ITEM_LOCATION));
@@ -82,8 +80,6 @@ public class ToDoRecyclerAdapter extends RecyclerView.Adapter<ToDoRecyclerAdapte
 
         @Bind(R.id.todo_item_name)
         TextView todoItemName;
-        @Bind(R.id.todo_item_date)
-        TextView todoItemDate;
         @Bind(R.id.todo_item_due_date)
         TextView todoItemDueDate;
         @Bind(R.id.todo_item_location)

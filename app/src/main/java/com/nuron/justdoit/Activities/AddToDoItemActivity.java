@@ -22,10 +22,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.LocationRequest;
 import com.nuron.justdoit.Fragments.DatePickerFragment;
-import com.nuron.justdoit.R;
 import com.nuron.justdoit.Fragments.SearchPlaceFragment;
 import com.nuron.justdoit.Fragments.TimePickerFragment;
 import com.nuron.justdoit.Model.ToDoItem;
+import com.nuron.justdoit.R;
 import com.parse.ParseACL;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -136,15 +136,25 @@ public class AddToDoItemActivity extends AppCompatActivity {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
-                if (hourOfDay < 12) {
-                    timeString = "0" + Integer.toString(hourOfDay) + ":" + minute + " AM";
-                } else if (hourOfDay == 12) {
-                    timeString = Integer.toString(hourOfDay) + ":" + minute + " PM";
+                Log.d(TAG, "hourOfDay : " + hourOfDay + " minute : " + minute);
+
+                String minuteString;
+                if(minute < 10){
+                    minuteString = "0" + minute;
                 } else {
-                    timeString = Integer.toString(hourOfDay - 12) + ":" + minute + " PM";
+                    minuteString = String.valueOf(minute);
                 }
 
-                todoDateText.setText(timeString + " , " + dateString);
+                if (hourOfDay < 12) {
+                    timeString = "0" + Integer.toString(hourOfDay) + ":" + minuteString + " AM";
+                } else if (hourOfDay == 12) {
+                    timeString = Integer.toString(hourOfDay) + ":" + minuteString + " PM";
+                } else {
+                    timeString = "0" + Integer.toString(hourOfDay - 12) + ":" + minuteString + " PM";
+                }
+
+
+                todoDateText.setText(timeString + ", " + dateString);
             }
         });
 
@@ -213,7 +223,6 @@ public class AddToDoItemActivity extends AppCompatActivity {
 
         ParseObject privateNote = new ParseObject(ToDoItem.TODO_TABLE_NAME);
         privateNote.put(ToDoItem.TODO_ITEM_NAME, todoItemNameText.getText().toString());
-        privateNote.put(ToDoItem.TODO_ITEM_DATE, todoDateText.getText().toString());
         privateNote.put(ToDoItem.TODO_ITEM_DUE_DATE, todoDateText.getText().toString());
         privateNote.put(ToDoItem.TODO_ITEM_LOCATION, todoItemLocationText.getText().toString());
         privateNote.setACL(new ParseACL(ParseUser.getCurrentUser()));

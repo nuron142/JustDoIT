@@ -34,12 +34,6 @@
                     android:textSize="18sp"/>
 
                 <TextView
-                    android:id="@+id/todo_item_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Date : 12/01/2015" />
-
-                <TextView
                     android:id="@+id/todo_item_due_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
