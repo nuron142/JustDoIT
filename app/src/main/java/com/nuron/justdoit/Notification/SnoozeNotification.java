@@ -17,7 +17,7 @@ public class SnoozeNotification extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        int delay = 20 * 100;
+        int delay = 30 * 60 * 1000;
 
         int notificationId = intent.getIntExtra(NotificationPublisher.NOTIFICATION_ID, 0);
         Log.d("1", "SnoozeNotification ID : " + notificationId);
