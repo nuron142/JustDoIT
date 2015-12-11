@@ -1,6 +1,7 @@
 package com.nuron.justdoit.Fragments;
 
 
+import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,13 +20,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.jakewharton.rxbinding.widget.RxTextView;
 import com.jakewharton.rxbinding.widget.TextViewTextChangeEvent;
-import com.nuron.justdoit.R;
+import com.nuron.justdoit.Activities.AddToDoItemActivity;
 import com.nuron.justdoit.Adapters.SearchLocationAdapter;
+import com.nuron.justdoit.R;
 
 import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
 import rx.Subscriber;
@@ -54,6 +57,16 @@ public class SearchPlaceFragment extends Fragment {
     @Bind(R.id.card_search_list)
     CardView cardSearchList;
 
+    @OnClick(R.id.search_clear_button)
+    public void clearSearch() {
+        searchLocationText.setText("");
+    }
+
+    @OnClick(R.id.home_back_button)
+    public void closeSearch() {
+        ((AddToDoItemActivity) getActivity()).handleBackPressed();
+    }
+
     private String currentLocation;
     public static final String CURRENT_LOCATION_ARG = "current_location";
     public static final String TAG = SearchPlaceFragment.class.getSimpleName();
@@ -62,6 +75,7 @@ public class SearchPlaceFragment extends Fragment {
     private ReactiveLocationProvider reactiveLocationProvider;
     private CompositeSubscription compositeSubscription;
     private SearchLocationAdapter searchLocationAdapter;
+    private Context context;
 
     public SearchPlaceFragment() {
     }
@@ -95,7 +109,7 @@ public class SearchPlaceFragment extends Fragment {
         if (currentLocation != null && !currentLocation.isEmpty()) {
             currentLocationText.setText(currentLocation);
         } else {
-            currentLocationText.setText("Couldn't Locate you. Tap to try again");
+            currentLocationText.setText("Sorry couldn't locate you");
         }
 
         searchRecyclerview.setHasFixedSize(true);
@@ -118,6 +132,7 @@ public class SearchPlaceFragment extends Fragment {
 
         Observable<Location> lastKnownLocationObservable =
                 reactiveLocationProvider.getLastKnownLocation();
+
         Observable<AutocompletePredictionBuffer> suggestionsObservable = Observable
                 .combineLatest(searchTextSubscription, lastKnownLocationObservable,
                         new Func2<TextViewTextChangeEvent, Location, QueryWithCurrentLocation>() {
@@ -125,7 +140,6 @@ public class SearchPlaceFragment extends Fragment {
                             public QueryWithCurrentLocation call(
                                     TextViewTextChangeEvent textViewTextChangeEvent,
                                     Location currentLocation) {
-
                                 return new QueryWithCurrentLocation(
                                         textViewTextChangeEvent.text().toString(),
                                         currentLocation);

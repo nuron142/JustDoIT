@@ -39,7 +39,6 @@ dependencies {
     compile 'io.reactivex:rxjava:1.0.16'
     compile 'com.jakewharton.rxbinding:rxbinding:0.3.0'
     compile 'com.google.android.gms:play-services-location:8.3.0'
-    compile 'io.realm:realm-android:0.85.1'
     compile 'com.pnikosis:materialish-progress:1.5'
     compile 'pl.charmas.android:android-reactive-location:0.8@aar'
     compile 'com.jakewharton:butterknife:7.0.1'

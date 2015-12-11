@@ -14,7 +14,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         card_view:cardCornerRadius="0dp"
-        card_view:cardElevation="1dp">
+        card_view:cardElevation="2dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -24,6 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
+                android:layout_centerVertical="true"
                 android:orientation="vertical">
 
                 <TextView
@@ -31,18 +32,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="Hello Master"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:id="@+id/todo_item_due_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="Due in 1 hour" />
+                    android:layout_marginTop="4dp"
+                    tools:text="Date :" />
 
                 <TextView
                     android:id="@+id/todo_item_location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
                     tools:text="At : Bellandur" />
 
             </LinearLayout>
@@ -55,11 +58,10 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true">
 
-                <TextView
+                <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Delete"
-                    android:textSize="18sp" />
+                    android:background="@drawable/ic_delete_black_24dp" />
             </LinearLayout>
 
         </RelativeLayout>

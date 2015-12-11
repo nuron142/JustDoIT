@@ -139,20 +139,23 @@ public class AddToDoItemActivity extends AppCompatActivity {
                 Log.d(TAG, "hourOfDay : " + hourOfDay + " minute : " + minute);
 
                 String minuteString;
-                if(minute < 10){
+                if (minute < 10) {
                     minuteString = "0" + minute;
                 } else {
                     minuteString = String.valueOf(minute);
                 }
 
-                if (hourOfDay < 12) {
+                if (hourOfDay < 10) {
                     timeString = "0" + Integer.toString(hourOfDay) + ":" + minuteString + " AM";
+                } else if ((hourOfDay >= 10) && (hourOfDay < 12)) {
+                    timeString = Integer.toString(hourOfDay) + ":" + minuteString + " AM";
                 } else if (hourOfDay == 12) {
                     timeString = Integer.toString(hourOfDay) + ":" + minuteString + " PM";
-                } else {
+                } else if ((hourOfDay > 12) && (hourOfDay < 22)) {
                     timeString = "0" + Integer.toString(hourOfDay - 12) + ":" + minuteString + " PM";
+                } else {
+                    timeString = Integer.toString(hourOfDay - 12) + ":" + minuteString + " PM";
                 }
-
 
                 todoDateText.setText(timeString + ", " + dateString);
             }

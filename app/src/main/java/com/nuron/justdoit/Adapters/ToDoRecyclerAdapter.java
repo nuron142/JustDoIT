@@ -57,11 +57,11 @@ public class ToDoRecyclerAdapter extends RecyclerView.Adapter<ToDoRecyclerAdapte
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         final ParseObject parseObject = parseObjectList.get(position);
 
-        viewHolder.todoItemName.setText("Name : " +
+        viewHolder.todoItemName.setText(
                 parseObject.getString(ToDoItem.TODO_ITEM_NAME));
         viewHolder.todoItemDueDate.setText("Due Date : " +
                 parseObject.getString(ToDoItem.TODO_ITEM_DUE_DATE));
-        viewHolder.todoItemLocation.setText("Location : " +
+        viewHolder.todoItemLocation.setText("At : " +
                 parseObject.getString(ToDoItem.TODO_ITEM_LOCATION));
         viewHolder.todoItemDelete.setOnClickListener(new View.OnClickListener() {
             @Override
